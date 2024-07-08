@@ -1,8 +1,8 @@
 import { Module } from '@nestjs/common';
-import { AppController } from './app.controller';
-import { AppService } from './app.service';
+import { AppController } from './controller/app.controller';
+import { AppService } from './service/app.service';
 import { ConfigModule, ConfigService } from '@nestjs/config';
-import { appConfig, typeORMConfig, configuredDataSource } from './config';
+import { appConfig, typeORMConfig, dataSource } from './config';
 import { TypeOrmModule, TypeOrmModuleOptions } from '@nestjs/typeorm';
 
 @Module({
@@ -20,7 +20,7 @@ import { TypeOrmModule, TypeOrmModuleOptions } from '@nestjs/typeorm';
       useFactory: async (
         configService: ConfigService,
       ): Promise<TypeOrmModuleOptions> => configService.getOrThrow('typeorm'),
-      dataSourceFactory: async () => await configuredDataSource.initialize(),
+      dataSourceFactory: async () => dataSource.initialize(),
     }),
   ],
   controllers: [AppController],

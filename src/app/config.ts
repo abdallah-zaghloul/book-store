@@ -1,4 +1,5 @@
 import { registerAs } from '@nestjs/config';
+import { TypeOrmModuleOptions } from '@nestjs/typeorm';
 import { IsBoolean, IsInt, IsString, validateSync } from 'class-validator';
 import { config as dotEnvConfig } from 'dotenv';
 import { DataSource, DataSourceOptions } from 'typeorm';
@@ -29,7 +30,7 @@ class TypeORMConfig {
 
   entities = ['dist/**/*.entity{.ts,.js}'];
 
-  migrations = ['dist/db/*{.ts,.js}'];
+  migrations = ['dist/app/database/*{.ts,.js}'];
 
   autoLoadEntities = true;
 
@@ -53,12 +54,14 @@ class TypeORMConfig {
 }
 
 //validation
-const validAppConfig = validConfig(AppConfig);
-const validTypeORMConfig = validConfig(TypeORMConfig);
+const validAppConfig: AppConfig = validConfig(AppConfig);
+const validTypeORMConfig: TypeOrmModuleOptions = validConfig(
+  TypeORMConfig,
+) as TypeOrmModuleOptions;
 
 //reg & exports
 export const appConfig = registerAs('app', () => validAppConfig);
 export const typeORMConfig = registerAs('typeorm', () => validTypeORMConfig);
-export const configuredDataSource = new DataSource(
+export const dataSource = new DataSource(
   validTypeORMConfig as DataSourceOptions,
 );
