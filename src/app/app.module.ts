@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Global, Module } from '@nestjs/common';
 import { AppController } from './controller/app.controller';
 import { AppService } from './service/app.service';
 import { ConfigModule, ConfigService } from '@nestjs/config';
@@ -6,7 +6,10 @@ import { appConfig, typeORMConfig, dataSource, jwtConfig } from './config';
 import { TypeOrmModule, TypeOrmModuleOptions } from '@nestjs/typeorm';
 import { AuthModule } from 'src/auth/auth.module';
 import { JwtModule, JwtModuleOptions } from '@nestjs/jwt';
+import { BookStoreModule } from 'src/book-store/book-store.module';
 
+//AppModule (Mediator)
+@Global()
 @Module({
   imports: [
     //Config
@@ -35,8 +38,11 @@ import { JwtModule, JwtModuleOptions } from '@nestjs/jwt';
     }),
     //Auth
     AuthModule,
+    //BookStore
+    BookStoreModule,
   ],
   controllers: [AppController],
   providers: [AppService],
+  exports: [AuthModule],
 })
 export class AppModule {}

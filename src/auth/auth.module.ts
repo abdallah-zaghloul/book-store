@@ -11,5 +11,7 @@ import { AuthRepository } from './repository/auth.repository';
   imports: [TypeOrmModule.forFeature([Auth, User])],
   controllers: [UserController],
   providers: [UserService, UserRepository, AuthRepository],
+  //exported for AppModule (Mediator)
+  exports: [AuthRepository],
 })
 export class AuthModule {}
