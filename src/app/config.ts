@@ -24,6 +24,9 @@ function validConfig<T extends new (...args: any[]) => any>(
 class AppConfig {
   @IsInt()
   port = Number(process.env.PORT);
+
+  @IsInt()
+  paginationCount = Number(process.env.PAGINATION_COUNT);
 }
 
 //typeORMConfig
