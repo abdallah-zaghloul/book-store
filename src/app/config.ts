@@ -1,8 +1,10 @@
 import { registerAs } from '@nestjs/config';
+import { JwtModuleOptions } from '@nestjs/jwt';
 import { TypeOrmModuleOptions } from '@nestjs/typeorm';
-import { IsBoolean, IsInt, IsString, validateSync } from 'class-validator';
+import { IsBoolean, IsNotEmpty, IsString, validateSync } from 'class-validator';
 import { config as dotEnvConfig } from 'dotenv';
 import { DataSource, DataSourceOptions } from 'typeorm';
+import { IsInt } from 'class-validator';
 
 //declare & fetch env path
 dotEnvConfig();
@@ -53,15 +55,29 @@ class TypeORMConfig {
   synchronize = Boolean(process.env.DB_SYNC);
 }
 
+class JwtSignOptions {
+  @IsNotEmpty()
+  @IsInt()
+  expiresIn = Number(process.env.JWT_EXPIRES_IN);
+}
+class JwtConfig implements JwtModuleOptions {
+  @IsString()
+  secret = process.env.JWT_SECRET;
+
+  signOptions = validConfig(JwtSignOptions) as JwtModuleOptions['signOptions'];
+}
+
 //validation
 const validAppConfig: AppConfig = validConfig(AppConfig);
 const validTypeORMConfig: TypeOrmModuleOptions = validConfig(
   TypeORMConfig,
 ) as TypeOrmModuleOptions;
+const validJWTConfig: JwtModuleOptions = validConfig(JwtConfig);
 
 //reg & exports
 export const appConfig = registerAs('app', () => validAppConfig);
 export const typeORMConfig = registerAs('typeorm', () => validTypeORMConfig);
+export const jwtConfig = registerAs('jwt', () => validJWTConfig);
 export const dataSource = new DataSource(
   validTypeORMConfig as DataSourceOptions,
 );
