@@ -7,6 +7,7 @@ import { TypeOrmModule, TypeOrmModuleOptions } from '@nestjs/typeorm';
 import { AuthModule } from 'src/auth/auth.module';
 import { JwtModule, JwtModuleOptions } from '@nestjs/jwt';
 import { BookStoreModule } from 'src/book-store/book-store.module';
+import { HttpResponseInterceptor } from './interceptor/http-response.interceptor';
 
 //AppModule (Mediator)
 @Global()
@@ -42,7 +43,7 @@ import { BookStoreModule } from 'src/book-store/book-store.module';
     BookStoreModule,
   ],
   controllers: [AppController],
-  providers: [AppService, Logger],
+  providers: [AppService, Logger, HttpResponseInterceptor],
   exports: [AuthModule],
 })
 export class AppModule {}
