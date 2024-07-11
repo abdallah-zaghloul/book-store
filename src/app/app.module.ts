@@ -1,4 +1,4 @@
-import { Global, Module } from '@nestjs/common';
+import { Global, Logger, Module } from '@nestjs/common';
 import { AppController } from './controller/app.controller';
 import { AppService } from './service/app.service';
 import { ConfigModule, ConfigService } from '@nestjs/config';
@@ -42,7 +42,7 @@ import { BookStoreModule } from 'src/book-store/book-store.module';
     BookStoreModule,
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [AppService, Logger],
   exports: [AuthModule],
 })
 export class AppModule {}
