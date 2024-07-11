@@ -8,9 +8,20 @@ import { AuthorRepository } from './repository/author.repository';
 import { Genre } from './entity/genre.entity';
 import { GenreService } from './service/genre.service';
 import { GenreRepository } from './repository/genre.repository';
+import { BookService } from './service/book.service';
+import { BookRepository } from './repository/book.repository';
+import { BooksController } from './controller/books.controller';
+import { Book } from './entity/book.entity';
 @Module({
-  imports: [TypeOrmModule.forFeature([Author, Genre])],
-  controllers: [AuthorsController, GenresController],
-  providers: [AuthorService, AuthorRepository, GenreService, GenreRepository],
+  imports: [TypeOrmModule.forFeature([Author, Genre, Book])],
+  controllers: [AuthorsController, GenresController, BooksController],
+  providers: [
+    AuthorService,
+    AuthorRepository,
+    GenreService,
+    GenreRepository,
+    BookService,
+    BookRepository,
+  ],
 })
 export class BookStoreModule {}
