@@ -1,73 +1,102 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="200" alt="Nest Logo" /></a>
-</p>
+# BookStore App Using NestJS
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+### MVP Demo
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://coveralls.io/github/nestjs/nest?branch=master" target="_blank"><img src="https://coveralls.io/repos/github/nestjs/nest/badge.svg?branch=master#9" alt="Coverage" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+[![MVP demo](https://img.youtube.com/vi/6RwOg5j3A5M/0.jpg)](https://youtu.be/6RwOg5j3A5M)
 
-## Description
+## How to run the project
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+### Requirements
 
-## Installation
+- NodeJS: starting from version v20.13.1 (recommended latest)
+- NPM package manager: starting from version 10.5.2 (recommended latest)
+- Running PostgreSQL Server: starting from version 16.2 (recommended latest)
 
-```bash
-$ npm install
+### Getting Started 🚀
+
+- Clone the repo
+- Create empty PostgreSQL database
+- Copy `.env.example` into a `.env` file and fill its own values
+- `cd` into the project
+- Run `npm install -D` to install the dependencies
+- Run `npm run build` to build
+- Run `npm run migration:run` to migrate typeorm migrations src/app/database/
+- Run `npm run start:dev` to run your dev server
+
+## Infra-structure ("/src" dir)
+
+### Module Structure (Modules Default)
+
+- controllers/ (Route Handling)
+- dto/ (Data Transfer Object)
+- repository/ (DB logic)
+- service/ (Business Logic)
+
+### Available Modules
+
+#### - AppModule (Global Mediator Module) "/src/app"
+
+contains globally used things like:
+
+- database/ table migrations
+- decorators/ (custom decorators)
+- exception-filter/ (http.exception-filter.ts => unify error, exception shape)
+- interceptor/ (http-response.interceptor.ts => unify response shape)
+- guard/ (auth.guard.ts => handle auth)
+- pipe/ (data transform)
+- config.ts (export, register diff validated app class based configs)
+- app.module.ts (handle dependency injection for diff modules)
+
+you don't need to create `/common/ feature/ shared/ DatabaseModule/ ConfigModule/ ... etc`
+this makes it complicated and very nested for example <br>
+why implement `ConfigModule`?
+NestJS provide you with a built-in one <br>
+why you create mediator and you have `AppModule` ?
+you should utilize `forRootAsync()` & `registerAsync()` methods
+
+#### - AuthModule (Persona Module) "/src/auth"
+
+- Persona data like user, (admin can be added)
+- Authentication, Authorization
+
+#### - BookStoreModule "/src/book-store" (Feature Module)
+
+- Book
+- Author
+- Genre
+
+## How Modules Communicate?
+
+- Modules Communicate to each others using `AppModule (Mediator)`
+- example:<br>
+    `BookStoreModule > BooksController` uses `AppModule > AuthGuard`
+    and if you check `BookStoreModule` it doesn't know about `AuthModule`
+    this makes ability to later on change the code inside `AuthGuard`
+    to utilize External Auth Service like `Keycloak` easily
+
+<img src="https://github.com/abdallah-zaghloul/book-store/assets/61375797/920df004-5689-4f2a-8e23-947b16db3082">
+<img src="https://github.com/abdallah-zaghloul/book-store/assets/61375797/aaafd2ab-a15b-4f9f-bee6-33ef12d8b174">
+
+## Response Shape
+
+you can change default status code to `SUCCESS: 200`
+at the `src/app/interceptor/http-response.interceptor.ts`
+
+```
+{
+  status: bool,
+  statusCode": number,
+  message": string,
+  data?: any, //response data
+  errors?: [] //validation errors
+}
 ```
 
-## Running the app
+available Status/Http codes:
 
-```bash
-# development
-$ npm run start
-
-# watch mode
-$ npm run start:dev
-
-# production mode
-$ npm run start:prod
-```
-
-## Test
-
-```bash
-# unit tests
-$ npm run test
-
-# e2e tests
-$ npm run test:e2e
-
-# test coverage
-$ npm run test:cov
-```
-
-## Support
-
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
-
-## Stay in touch
-
-- Author - [Kamil Myśliwiec](https://kamilmysliwiec.com)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
-
-## License
-
-Nest is [MIT licensed](LICENSE).
+- 200: Success (default)
+- 204: No Content
+- 400: Bad Request (validation)
+- 401: Unauthorized
+- 404: Not Found
+- 500: Internal Server Error
