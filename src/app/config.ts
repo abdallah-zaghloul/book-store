@@ -1,83 +1,112 @@
-import { registerAs } from '@nestjs/config';
-import { JwtModuleOptions } from '@nestjs/jwt';
-import { TypeOrmModuleOptions } from '@nestjs/typeorm';
-import { IsBoolean, IsNotEmpty, IsString, validateSync } from 'class-validator';
+import {
+  IsBoolean,
+  IsNotEmpty,
+  IsString,
+  IsInt,
+  ValidateNested,
+  validateSync,
+  IsNotEmptyObject,
+  Min,
+} from 'class-validator';
+import { ClassTransformOptions, plainToInstance } from 'class-transformer';
 import { config as dotEnvConfig } from 'dotenv';
+import { registerAs } from '@nestjs/config';
 import { DataSource, DataSourceOptions } from 'typeorm';
-import { IsInt } from 'class-validator';
+import { TypeOrmModuleOptions } from '@nestjs/typeorm';
+import { SignOptions } from 'jsonwebtoken';
+import { JwtModuleOptions } from '@nestjs/jwt';
 
 //declare & fetch env path
 dotEnvConfig();
 
-//validate config
-function validConfig<T extends new (...args: any[]) => any>(
-  ConfigClass: T,
-  ...args: ConstructorParameters<T>
+//instantiate config instance
+function toConfig<T extends new () => InstanceType<T>>(
+  configClass: T,
+  options?: ClassTransformOptions,
 ): InstanceType<T> {
-  const instance = new ConfigClass(...args);
-  const errors = validateSync(instance, { skipMissingProperties: false });
+  return plainToInstance(configClass, {}, options);
+}
+
+//validate config
+function validConfig<T extends new () => InstanceType<T>>(
+  configClass: T,
+): InstanceType<T> {
+  const config = toConfig(configClass);
+  const errors = validateSync(config as object, {
+    skipMissingProperties: false,
+  });
+
   if (errors.length > 0) throw new Error(errors.toString());
-  return { ...instance };
+  return config;
 }
 
 //appConfig
-class AppConfig {
+export class AppConfig {
+  @IsNotEmpty()
   @IsInt()
-  port = Number(process.env.PORT);
+  port: number = Number(process.env.PORT);
 
+  @IsNotEmpty()
   @IsInt()
-  paginationCount = Number(process.env.PAGINATION_COUNT);
+  paginationCount: number = Number(process.env.PAGINATION_COUNT);
 }
 
 //typeORMConfig
-class TypeORMConfig {
-  type = 'postgres';
+export class TypeORMConfig {
+  type: string = 'postgres';
 
-  entities = ['dist/**/*.entity{.ts,.js}'];
+  entities: string[] = ['dist/**/*.entity{.ts,.js}'];
 
-  migrations = ['dist/app/database/*{.ts,.js}'];
+  migrations: string[] = ['dist/app/database/*{.ts,.js}'];
 
-  autoLoadEntities = true;
+  autoLoadEntities: boolean = true;
 
+  @IsNotEmpty()
   @IsString()
-  host = process.env.DB_HOST;
+  host: string = process.env.DB_HOST!;
 
-  @IsInt()
-  port = Number(process.env.DB_PORT);
-
-  @IsString()
-  username = process.env.DB_USER;
-
-  @IsString()
-  password = process.env.DB_PASSWORD;
-
-  @IsString()
-  database = process.env.DB_NAME;
-
-  @IsBoolean()
-  synchronize = Boolean(process.env.DB_SYNC);
-}
-
-class JwtSignOptions {
   @IsNotEmpty()
   @IsInt()
-  expiresIn = Number(process.env.JWT_EXPIRES_IN);
-}
-class JwtConfig implements JwtModuleOptions {
-  @IsString()
-  secret = process.env.JWT_SECRET;
+  port: number = Number(process.env.DB_PORT);
 
-  signOptions = validConfig(JwtSignOptions) as JwtModuleOptions['signOptions'];
+  @IsNotEmpty()
+  @IsString()
+  username: string = process.env.DB_USER!;
+
+  @IsNotEmpty()
+  @IsString()
+  password: string = process.env.DB_PASSWORD!;
+
+  @IsNotEmpty()
+  @IsString()
+  database: string = process.env.DB_NAME!;
+
+  @IsBoolean()
+  synchronize: boolean = Boolean(process.env.DB_SYNC); //default false
+}
+
+class JwtSignOptions implements SignOptions {
+  @IsNotEmpty()
+  @IsInt()
+  @Min(1)
+  expiresIn: number = Number(process.env.JWT_EXPIRES_IN);
+}
+export class JwtConfig implements JwtModuleOptions {
+  @IsNotEmpty()
+  @IsString()
+  secret: string = process.env.JWT_SECRET!;
+
+  @IsNotEmptyObject()
+  @ValidateNested()
+  signOptions: JwtSignOptions = toConfig(JwtSignOptions);
 }
 
 //validation
 const validAppConfig: AppConfig = validConfig(AppConfig);
-const validTypeORMConfig: TypeOrmModuleOptions = validConfig(
-  TypeORMConfig,
-) as TypeOrmModuleOptions;
+const validTypeORMConfig = validConfig(TypeORMConfig) as TypeOrmModuleOptions;
 const validJWTConfig: JwtModuleOptions = validConfig(JwtConfig);
 
-//reg & exports
+//register
 export const appConfig = registerAs('app', () => validAppConfig);
 export const typeORMConfig = registerAs('typeorm', () => validTypeORMConfig);
 export const jwtConfig = registerAs('jwt', () => validJWTConfig);

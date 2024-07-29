@@ -12,6 +12,7 @@ import { AuthRepository } from '../repository/auth.repository';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { User } from '../entity/user.entity';
+import { JwtConfig } from 'src/app/config';
 
 @Injectable()
 export class UserService {
@@ -67,7 +68,9 @@ export class UserService {
     });
 
     const payload = this.jwtService.verify(accessToken);
-    const expiresIn = this.configService.get('jwt.signOptions.expiresIn')!;
+    const expiresIn = this.configService.get<
+      JwtConfig['signOptions']['expiresIn']
+    >('jwt.signOptions.expiresIn')!;
 
     return await this.authRepository.upsertUserAuth({
       accessToken,

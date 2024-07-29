@@ -2,7 +2,14 @@ import { Global, Logger, Module } from '@nestjs/common';
 import { AppController } from './controller/app.controller';
 import { AppService } from './service/app.service';
 import { ConfigModule, ConfigService } from '@nestjs/config';
-import { appConfig, typeORMConfig, dataSource, jwtConfig } from './config';
+import {
+  appConfig,
+  typeORMConfig,
+  jwtConfig,
+  dataSource,
+  JwtConfig,
+  TypeORMConfig,
+} from './config';
 import { TypeOrmModule, TypeOrmModuleOptions } from '@nestjs/typeorm';
 import { AuthModule } from 'src/auth/auth.module';
 import { JwtModule, JwtModuleOptions } from '@nestjs/jwt';
@@ -25,7 +32,10 @@ import { HttpResponseInterceptor } from './interceptor/http-response.interceptor
       inject: [ConfigService],
       useFactory: async (
         configService: ConfigService,
-      ): Promise<TypeOrmModuleOptions> => configService.getOrThrow('typeorm'),
+      ): Promise<TypeOrmModuleOptions> =>
+        configService.getOrThrow<TypeORMConfig>(
+          'typeorm',
+        ) as TypeOrmModuleOptions,
       dataSourceFactory: async () => dataSource.initialize(),
     }),
     //JWT
@@ -35,7 +45,8 @@ import { HttpResponseInterceptor } from './interceptor/http-response.interceptor
       global: true,
       useFactory: async (
         configService: ConfigService,
-      ): Promise<JwtModuleOptions> => configService.getOrThrow('jwt'),
+      ): Promise<JwtModuleOptions> =>
+        configService.getOrThrow<JwtConfig>('jwt'),
     }),
     //Auth
     AuthModule,

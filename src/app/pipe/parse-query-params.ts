@@ -1,5 +1,6 @@
 import { PipeTransform, Injectable, ArgumentMetadata } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { AppConfig } from '../config';
 
 @Injectable()
 export class ParseQueryParams implements PipeTransform {
@@ -11,7 +12,9 @@ export class ParseQueryParams implements PipeTransform {
         value,
         {
           key: 'take',
-          defaultValue: this.configService.get('app.paginationCount')!,
+          defaultValue: this.configService.get<AppConfig['paginationCount']>(
+            'app.paginationCount',
+          )!,
         },
         { key: 'skip', defaultValue: 0 },
       );
